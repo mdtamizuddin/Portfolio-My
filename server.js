@@ -2,37 +2,55 @@ const express = require('express')
 const app = express()
 app.use(express.json())
 const nodemailer = require('nodemailer')
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 3001
 const cors = require('cors')
 app.use(cors())
+require('dotenv').config()
+const uri = process.env.DB_URI
+const mongoose = require('mongoose')
+const multer = require('multer')
+const transporter = require('./Model/transporter')
 
 
+mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+    .then(() => console.log('Database Is Connected'))
+    .catch((err) => console.log(err))
 
-let transporter = nodemailer.createTransport({
-    host: "mail.mdtamiz.xyz",
-    port: 465,
-    secure: true, // true for 465, false for other ports
-    auth: {
-        user: 'tamiz@mdtamiz.xyz', // generated ethereal user
-        pass: '@mttarin.420', // generated ethereal password
+const rendom = (Math.random() + 13).toString(36).substring(7);
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'public/images')
     },
-});
-
-transporter.verify(function (error, success) {
-    if (error) {
-        console.log(error);
-    } else {
-        console.log("Server is ready to take our messages");
+    filename: (req, file, cb) => {
+        cb(null, rendom + file.originalname)
     }
-});
+})
+const upload = multer({
+    storage: storage
+})
+app.use('/api/images', express.static('public/images')
+)
+app.use('/api/portfolio', require('./Router/portfolioRouter'))
+app.use('/api/messages', require('./Router/messageRouter'))
+app.use('/api/user', require('./Router/userRouter'))
+
+app.post('/api/upload', upload.single('image'), (req, res) => {
+    res.send(`images/${req.file.filename}`)
+})
 
 
-app.post('/send', (req, res) => {
+
+app.use(express.static('public'))
+
+app.post('/api/send', (req, res) => {
     const body = req.body
     async function main() {
 
         let info = await transporter.sendMail({
-            from: '"Website Mail " <tamiz@mdtamiz.xyz>', // sender address
+            from: '"Website Mail " <web@mdtamiz.xyz>', // sender address
             to: "mdtomiz.official@gmail.com", // list of receivers
             subject: req.body.subject, // Subject line
             text: req.body.message, // plain text body
@@ -46,10 +64,6 @@ app.post('/send', (req, res) => {
 
     main().catch(console.error);
     res.status(200).send({ message: "Message Sent" })
-})
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
 })
 
 app.listen(PORT, () => {
