@@ -29,9 +29,11 @@ router.post('/new', (req, res) => {
     const newMessage = new Message(req.body)
     newMessage.save((err, data) => {
         if (err) {
+            
             res.send({ message: "something went wrong" })
         }
         else {
+            console.log(data)
             res.send(data)
         }
     })
