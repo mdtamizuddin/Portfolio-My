@@ -1,8 +1,16 @@
-const { model, Schema, models } = require("mongoose");
+const { model, Schema } = require("mongoose");
 const schema = new Schema({
   category: {
     type: String,
     required: true,
+  },
+  status: {
+    type: String,
+    default: "pending",
+  },
+  visitor: {
+    type: Number,
+    default: 0
   },
   img: {
     type: String,
@@ -24,6 +32,10 @@ const schema = new Schema({
     type: String,
     default: "",
   },
+  user: {
+    type: String,
+    required: true
+  }
 });
 const Component = new model("Component", schema);
 module.exports = Component;
