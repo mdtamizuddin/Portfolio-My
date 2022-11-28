@@ -44,6 +44,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
 });
+
 app.use("/api/images", express.static("public/images"));
 app.use("/api/portfolio", require("./Router/portfolioRouter"));
 app.use("/api/messages", require("./Router/messageRouter"));
@@ -51,6 +52,7 @@ app.use("/api/user", require("./Router/userRouter"));
 app.use("/api/components", require("./Router/componentRouter"));
 app.use("/api/development", require("./Router/development"));
 app.use("/api/members", require("./Router/member"));
+app.use("/api/bhab", require("./Router/bhabSRoute"));
 
 app.post("/api/upload", upload.single("image"), (req, res) => {
   res.send(`images/${req.file.filename}`);

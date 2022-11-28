@@ -2,7 +2,7 @@ const portfolioContainer = document.getElementById('portfolio-container')
 const portfolioContainerHome = document.getElementById('portfolio-container-home')
 
 const getData = async () => {
-    await fetch('/api/portfolio')
+    await fetch('https://mdtamiz.xyz/api/portfolio')
         .then(res => res.json())
         .then(json => setPortfolios(json))
 }
