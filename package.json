@@ -1,12 +1,12 @@
 {
-  "name": "server",
+  "name": "my-portfolio",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "startD": "nodemon server.js",
-    "start": "node server.js"
+    "startD": "nodemon index.js",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
