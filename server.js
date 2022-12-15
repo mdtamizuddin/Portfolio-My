@@ -11,8 +11,11 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const transporter = require("./Model/transporter");
 const http = require("http");
+const linearServer = require("./server2");
+const flashfile = require("./Router/FlashFile/main");
 const server = http.createServer(app);
 
+flashfile()
 // // Socket Server
 
 // const { Server } = require("socket.io");
@@ -79,6 +82,35 @@ app.post("/api/send", (req, res) => {
   main().catch(console.error);
   res.status(200).send({ message: "Message Sent" });
 });
+
+const { client } = linearServer()
+
+// Routes For Lineargraphic.com 
+// Routes For Lineargraphic.com 
+// Routes For Lineargraphic.com 
+
+app.use('/linear/portfolio', require('./Router/LinearGraphic/Portfolio'))
+app.use('/linear/pricing', require('./Router/LinearGraphic/pricing'))
+app.use('/linear/titles', require('./Router/LinearGraphic/title'))
+app.use('/linear/users', require('./Router/LinearGraphic/users'))
+app.use('/linear/email', require('./Router/LinearGraphic/email'))
+app.use('/linear/genarel', require('./Router/LinearGraphic/genarelpricing'))
+
+
+
+// Routes For Falshfiles 
+// Routes For Falshfiles  
+// Routes For Falshfiles 
+// flashfile 
+app.use('/flashfile/users', require('./Router/FlashFile/userRouter'))
+app.use('/flashfile/files', require('./Router/FlashFile/flashfilesRouter'))
+async function run() {
+  await client.connect()
+  console.log('Linear Graphic Database Connected')
+
+}
+run().catch(console.dir())
+
 
 server.listen(PORT, () => {
   console.log("Example app listening");
