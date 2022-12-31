@@ -14,18 +14,39 @@ const http = require("http");
 const linearServer = require("./server2");
 const flashfile = require("./Router/FlashFile/main");
 const server = http.createServer(app);
+const { Server } = require('socket.io');
+const { activeUser, diactiveUser } = require("./Router/messageEditor");
 
-flashfile()
-// // Socket Server
 
-// const { Server } = require("socket.io");
-// const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT"]
+  }
+})
 
-// io.on('connection', (socket)=> {
-//     console.log("New User Added")
-// })
+const users = {}
 
-// Socket Server End Here
+console.log(users)
+
+io.on("connection", (socket) => {
+  socket.on("new-user-connect", (data) => {
+    users[socket.id] = data.email
+    socket.broadcast.emit('user-joined', data)
+    activeUser(data.email)
+  })
+
+
+  socket.on('disconnect', () => {
+    socket.broadcast.emit("gaya", { id: users[socket.id] })
+    diactiveUser(users[socket.id])
+  });
+  socket.on("send_message", (data) => {
+    // Message
+    socket.broadcast.emit("recive_message", data)
+  })
+})
+
 
 mongoose
   .connect(uri, {
@@ -35,31 +56,54 @@ mongoose
   .then(() => console.log("Database Is Connected"))
   .catch((err) => console.log(err));
 
-const rendom = (Math.random() + 13).toString(36).substring(7);
+
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/images");
+    cb(null, "temp");
   },
   filename: (req, file, cb) => {
-    cb(null, rendom + file.originalname);
+    cb(null, file.originalname);
+  },
+});
+const storage2 = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
   },
 });
 const upload = multer({
   storage: storage,
 });
 
-app.use("/api/images", express.static("public/images"));
+const upload2 = multer({
+  storage: storage2,
+});
+
+app.use("/images/temp", express.static("temp"));
+app.use("/images", express.static("images"));
+
+
+app.use("/api/message", require("./Router/messageRouter"));
+app.use("/api/users", require("./Router/userRouter"));
+
 app.use("/api/portfolio", require("./Router/portfolioRouter"));
-app.use("/api/messages", require("./Router/messageRouter"));
-app.use("/api/user", require("./Router/userRouter"));
 app.use("/api/components", require("./Router/componentRouter"));
 app.use("/api/development", require("./Router/development"));
 app.use("/api/members", require("./Router/member"));
 app.use("/api/bhab", require("./Router/bhabSRoute"));
 
-app.post("/api/upload", upload.single("image"), (req, res) => {
-  res.send(`images/${req.file.filename}`);
+app.post("/upload-temp", upload.single("image"), (req, res) => {
+  res.send({ url: `http://localhost:5000/images/temp/${req.file.filename}` });
+
 });
+
+app.post("/upload", upload2.single("image"), (req, res) => {
+  res.send({ url: `http://localhost:5000/images/${req.file.filename}` });
+});
+
 
 app.use(express.static("public"));
 
@@ -91,10 +135,13 @@ const { client } = linearServer()
 
 app.use('/linear/portfolio', require('./Router/LinearGraphic/Portfolio'))
 app.use('/linear/pricing', require('./Router/LinearGraphic/pricing'))
+app.use('/linear/pricing2', require('./Router/LinearGraphic/pricing2'))
 app.use('/linear/titles', require('./Router/LinearGraphic/title'))
+app.use('/linear/bangla-titles', require('./Router/LinearGraphic/titleBangla'))
 app.use('/linear/users', require('./Router/LinearGraphic/users'))
 app.use('/linear/email', require('./Router/LinearGraphic/email'))
 app.use('/linear/genarel', require('./Router/LinearGraphic/genarelpricing'))
+app.use('/linear/genarel-bd', require('./Router/LinearGraphicBd/genarelpricing'))
 
 
 
@@ -111,6 +158,8 @@ async function run() {
 }
 run().catch(console.dir())
 
+
+flashfile()
 
 server.listen(PORT, () => {
   console.log("Example app listening");

@@ -1,41 +1,41 @@
 const mongoose = require('mongoose')
 
-const MessageSchema = mongoose.Schema({
-    email: {
+const messageSchema = mongoose.Schema({
+    user: {
         type: String,
+        required: true
+    },
+    sender: {
+        type: Object,
         required: true,
     },
-    from: {
-        type: String,
-        required: true,
+    receiver: {
+        type: Object,
+        required: true
     },
-    photo: {
+    image: {
         type: String,
-        default: ''
+        default: ""
     },
-    to: {
+    emoji: {
         type: String,
-        required: true,
+        default: ""
+    },
+    sticker: {
+        type: String,
+        default: ""
     },
     message: {
         type: String,
-        required: true,
+        default: ""
     },
-    deleted: {
-        type: Boolean,
-        default: false
-    },
-    name: {
-        type: String,
-        required: true,
-    },
+
     date: {
-        type: Date,
-        required: true,
-    }
+        type: String,
+        default: ""
+    },
 })
 
-const Message = new mongoose.model('Message', MessageSchema)
+const Message = new mongoose.model('Message', messageSchema)
 
 module.exports = Message
-

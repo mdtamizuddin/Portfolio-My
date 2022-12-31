@@ -16,8 +16,18 @@ const pricing = client.db("linear-graphic").collection("pricings")
 const titles = client.db("linear-graphic").collection("titles")
 const users = client.db("linear-graphic").collection("users")
 const genarelps = client.db("linear-graphic").collection("genarelps")
+// Routes for bangla Website 
+
+
+
+const titleBangla = client.db("linear-graphic").collection("banglatitles")
+const portfolioBD = client.db("linear-graphic").collection("portfolios-bd")
+const pricing2 = client.db("linear-graphic").collection("pricings2")
+const genarelpsBD = client.db("linear-graphic").collection("genarelps-bd")
 const linearServer = () => {
-    return { client , portfolio , titles , pricing , users, genarelps}
+    return { client , portfolio , titles , pricing , users, genarelps,titleBangla , pricing2
+    ,portfolioBD,genarelpsBD
+    }
 
 }
 

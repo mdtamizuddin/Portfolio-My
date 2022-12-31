@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const UserSchema = mongoose.Schema({
+const userSchema = mongoose.Schema({
     email: {
         type: String,
         required: true,
@@ -8,26 +8,39 @@ const UserSchema = mongoose.Schema({
     },
     name: {
         type: String,
-        required: true,
+        required: true
     },
-    code: {
-        type: Number,
-        required: true,
+    friendList: {
+        type: Array,
+        default: []
     },
-    verifyed: {
+    lastChat: {
+        type: Object,
+        default: {}
+    },
+    active: {
         type: Boolean,
         default: false
     },
+    photoURL: {
+        type: String,
+        default: "https://cdn-icons-png.flaticon.com/128/3899/3899618.png"
+    },
+    info: {
+        type: String,
+        default: ""
+    },
+
     password: {
         type: String,
-        required: true,
+        default: ""
     },
     date: {
-        type: Date,
-        required: true
-    }
+        type: String,
+        default: ""
+    },
 })
-const User = new mongoose.model('User', UserSchema)
 
-module.exports = User
+const Users = new mongoose.model('Users', userSchema)
 
+module.exports = Users

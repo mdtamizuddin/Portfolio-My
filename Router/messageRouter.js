@@ -1,59 +1,43 @@
 const express = require('express')
+const encrypter = require('../encripter')
 const Message = require('../Model/Message')
-
 const router = express.Router()
+const jwt = require('jsonwebtoken')
+const verifyJWT = require('../verifyJWT')
+const Cryptr = require('cryptr');
 
-router.get('/:email', (req, res) => {
-    const email = req.params.email
-    Message.find({ $or: [{ from: email }, { to: email }] }, (err, data) => {
-        if (err) {
-            res.status(500).send({ message: "Something Went to wrong on Seerver" })
-        }
-        else {
-            const newData = data.reverse()
-            res.status(200).send(newData)
-        }
-    })
-})
-router.get('/all', (req, res) => {
+
+router.get('/', (req, res) => {
     Message.find({}, (err, data) => {
-        if (err) {
-            res.status(500).send({ message: "Something Went to wrong on Seerver" })
-        }
-        else {
-            res.status(200).send(data)
-        }
-    })
-})
-router.post('/new', (req, res) => {
-    const newMessage = new Message(req.body)
-    newMessage.save((err, data) => {
-        if (err) {
-            
-            res.send({ message: "something went wrong" })
-        }
-        else {
-            console.log(data)
+        if (data) {
             res.send(data)
         }
+        else {
+            res.send(err)
+        }
     })
 })
-router.delete('/:id', (req, res) => {
-    Message.updateOne({ _id: req.params.id }, {
-        $set: {
-            deleted: true
-        }
-    }, (err) => {
+
+router.get('/message/:sender/:rechiver', (req, res) => {
+    const sender = req.params.sender
+    const rechiver = req.params.rechiver
+
+    Message.find({ $or: [{ user: [`${sender}&${rechiver}`, `${rechiver}&${sender}`] }] }, (err, data) => {
+        res.send(data)
+    })
+})
+
+router.post('/message-in', (req, res) => {
+    const newMessage = new Message(req.body)
+    newMessage.save((err) => {
         if (err) {
-            res.status(500).send({ message: "Something went wrong" })
+            res.send({ success: false })
         }
         else {
-            res.send({ message: "Message Deleted" })
+            res.send({ success: true })
         }
     })
 })
 
 
 module.exports = router
-
-

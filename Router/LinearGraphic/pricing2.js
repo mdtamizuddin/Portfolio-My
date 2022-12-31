@@ -2,26 +2,26 @@ const linearServer = require('../../server2')
 const { ObjectId } = require('mongodb');
 const express = require('express')
 const router = express.Router()
-const { pricing } = linearServer()
+const { pricing2 } = linearServer()
 
 router.get("/", async (req, res) => {
-    const data = await pricing.find({}).toArray()
+    const data = await pricing2.find({}).toArray()
     res.send(data)
 })
 
 router.get("/:id", async (req, res) => {
-    const data = await pricing.findOne({ _id: ObjectId(req.params.id) })
+    const data = await pricing2.findOne({ _id: ObjectId(req.params.id) })
     res.send(data)
 })
 
 router.post('/post', async (req, res) => {
     const newData = req.body
-    const result = await pricing.insertOne(newData)
+    const result = await pricing2.insertOne(newData)
     res.send(result)
 })
 router.put('/:id', async (req, res) => {
     const data = req.body
-    const result = await pricing.updateOne({ _id: ObjectId(req.params.id) }, {
+    const result = await pricing2.updateOne({ _id: ObjectId(req.params.id) }, {
         $set: {
             name: data.name,
             price: data.price,
@@ -37,7 +37,7 @@ router.put('/:id', async (req, res) => {
     res.send(result)
 })
 router.delete('/:id', async (req, res) => {
-    const result = await pricing.deleteOne({ _id: ObjectId(req.params.id) })
+    const result = await pricing2.deleteOne({ _id: ObjectId(req.params.id) })
     res.send(result)
 })
 

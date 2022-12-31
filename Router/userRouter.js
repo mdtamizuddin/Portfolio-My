@@ -1,148 +1,157 @@
 const express = require('express')
-const transporter = require('../Model/transporter')
-const nodemailer = require('nodemailer')
-const User = require('../Model/User')
-const jwt = require('jsonwebtoken')
-const encrypter = require('./encrypter')
-
+const encrypter = require('../encripter')
+const Users = require('../Model/User')
 const router = express.Router()
+const jwt = require('jsonwebtoken')
+const verifyJWT = require('../verifyJWT')
+const Cryptr = require('cryptr');
+const cryptr = new Cryptr('Hello Mother');
 
 router.get('/', (req, res) => {
-    User.find({}, (err, data) => {
+    const request = req.headers.sender
+
+    Users.find({ email: { $nin: [request] } }, (err, data) => {
         if (err) {
-            res.status(500).send({ message: "Something Went to wrong on Seerver" })
+            res.send(err)
         }
         else {
-            res.status(200).send(data)
+            res.send(data)
         }
     })
 })
-router.get('/:email', (req, res) => {
-    User.findOne({ email: req.params.email }, (err, data) => {
+
+router.get('/get/:email', (req, res) => {
+    Users.findOne({ email: req.params.email }, (err, data) => {
         if (data) {
-            res.status(200).send({ email: data.email, name: data.name, verifyed: data.verifyed })
+            res.send(data)
+        }
+        else if (data === null) {
+            res.send({})
         }
         else {
-            res.status(500).send({ message: "Something Went to wrong on Seerver" })
+            res.status(500).send(err)
         }
     })
 })
-router.get('/check/:email', (req, res) => {
-    User.findOne({ email: req.params.email }, (err, data) => {
-        if (!data) {
-            res.send("Invalid User")
-        }
-        else {
-            res.send({
-                message: "Wellcome", email: data.email, name: data.name,
-                verifyed: data.verifyed
-            })
-        }
-    })
-})
-router.post('/new', (req, res) => {
-    const body = req.body
-    const email = body.email
-    User.findOne({ email: email }, (err, data) => {
-        if (data?.email) {
-            res.send({ message: "Email Alrady Registerd" })
-        }
-        else {
-            const name = body.name
-            const code = Math.floor((Math.random() * 156514) + 1)
-            const password = encrypter(body.password, email)
-            const newUser = new User({ name, email, password, date: body.date, code })
-            newUser.save((err) => {
+
+router.post('/last-chat', (req, res) => {
+    const friend = req.body.friend
+    const user = req.body.user
+
+    Users.findOne({ email: user }, (err, result) => {
+        if (result) {
+            Users.updateOne({ email: user }, {
+                $set: {
+                    lastChat: friend
+                }
+            }, (err, data) => {
                 if (err) {
-                    res.status(500).send(err)
-                    console.log(err)
+                    res.send({ success: false, message: "Something went wrong" })
                 }
                 else {
-                    sentEmail(newUser)
-                    token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN)
-                    res.status(200).json({ message: `Wellcome ${email}`, token: token })
+                    res.send({ success: true, data })
                 }
             })
         }
     })
-
 })
+router.put('/add-friend', (req, res) => {
+    const friend = req.body.email
+    const user = req.body.user
 
-router.post('/login', (req, res) => {
-    const email = req.body.email
-    const password = encrypter(req.body.password, email)
-    User.findOne({ email: email }, (err, data) => {
-        if (err) {
-            res.status(500).send({ message: "something went wrong" })
-        }
-        else {
-            if (data) {
-                if (password === data.password) {
-                    token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN)
-                    res.send({ message: "wellcome Back", token })
-                } else {
-                    res.send({ message: "Incorrect Password" })
-                }
+    Users.findOne({ email: user }, (err, result) => {
+        if (result) {
+            const isExist = result.friendList.filter(u => u === friend)
+            if (isExist.length === 0) {
+                Users.updateOne({ email: user }, {
+                    $set: {
+                        friendList: [...result.friendList, friend]
+                    }
+                }, (err, data) => {
+                    if (err) {
+                        res.send({ success: false, message: "Something went wrong" })
+                    }
+                    else {
+                        // Lest add you to your Friends Friend List
+                        Users.findOne({ email: friend }, (err, data) => {
+                            if (data) {
+                                Users.updateOne({ email: friend }, {
+                                    $set: {
+                                        friendList: [...data.friendList, user]
+                                    }
+                                }, (err, data) => {
+                                    if (err) {
+                                        res.send({ success: false, message: "Something went wrong" })
+                                    }
+                                    else {
+                                        res.send({ success: true, data })
+                                    }
+                                })
+                            }
+                            else {
+                                res.send({ success: false, message: "Something went wrong" })
+                            }
+                        })
+
+
+
+                    }
+                })
             }
             else {
-                res.send({ message: "User Not Found" })
+                res.send({ success: false, message: "User Is Alrady In Your Friendlist" })
             }
-        }
-    })
-})
-router.post('/resend/:email', (req, res) => {
-    const email = req.params.email
-    User.findOne({ email: email }, (err, data) => {
-        if (err) {
-            res.send({ message: "Something went Wrong" })
-        }
-        else {
-            sentEmail(data)
-            res.status(200).send({ message: "Resend Mail Success" })
-        }
-    })
 
-})
-router.put('/veirfy/:email', (req, res) => {
-    const code = req.body.post
-    User.updateOne({ email: req.params.email }, {
-        $set: {
-            code: code
-        }
-    }, (err) => {
-        if (err) {
-            res.status(500).send({ message: "Something Went Wrong" })
-        }
-        else {
-            res.status(200).send({ message: "" })
         }
     })
 })
+
+router.put('/login', (req, res) => {
+    const body = req.body
+    const password = encrypter(body.password, body.email)
+    Users.findOne({ email: body.email }, (err, data) => {
+        if (data) {
+            if (data.password === password) {
+                const email = cryptr.encrypt(body.email);
+                token = jwt.sign({
+                    you: email,
+                    message: "Don't Try To Do this Again This Again"
+                },
+                    process.env.ACCESS_TOKEN,
+                    { expiresIn: '1d' }
+                )
+                res.send({ token, message: "login success" })
+            }
+            else {
+                console.log('Doesnt Matched')
+                res.send({ message: "credentials does not match" })
+            }
+
+        }
+        else {
+            res.send({ message: "User not found" })
+        }
+    })
+})
+
+
+
+router.put('/new', (req, res) => {
+    const body = req.body
+    const password = encrypter(body.password, body.email)
+    const newUser = new Users({ email: body.email, name: body.name, photoURL: body.photoURL, password, date: body.date })
+
+    newUser.save((err, data) => {
+        if (err) {
+            res.status(500).send(err)
+        }
+        else {
+            res.status(200).send({ message: "User Inserted", data })
+        }
+    })
+})
+
+
+
 
 module.exports = router
-
-const sentEmail = (user) => {
-    async function main() {
-        // send mail with defined transport object
-        let info = await transporter.sendMail({
-            from: '"Recived Mail From Md Tamiz 👍" <tamiz@mdtamiz.xyz>', // sender address
-            to: user.email, // list of receivers
-            subject: "Md Tamiz User Verificition Code ✔", // Subject line
-            text: "Md Tamiz User Verificition Code", // plain text body
-            html: `
-        <div>
-            <h3>Verify Your Account with This Code</h3>
-            <h4>Code : ${user.code}</h4>
-            <p> Thank You 👋</p>
-        </div> 
-        `,
-        });
-
-        console.log("Message sent: %s", info.messageId);
-
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    }
-
-    main().catch(console.error);
-};
-

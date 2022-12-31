@@ -2,11 +2,11 @@
   "name": "my-portfolio",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "startD": "nodemon index.js",
-    "start": "node index.js"
+    "startD": "nodemon server.js",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +14,7 @@
   "dependencies": {
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
+    "cryptr": "^6.0.3",
     "dotenv": "^16.0.2",
     "encrypt-password": "^1.0.1",
     "express": "^4.18.1",
