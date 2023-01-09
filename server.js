@@ -18,6 +18,7 @@ const { Server } = require('socket.io');
 const { activeUser, diactiveUser } = require("./Router/messageEditor");
 
 
+
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -48,46 +49,41 @@ io.on("connection", (socket) => {
 })
 
 
-mongoose
-  .connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("Database Is Connected"))
-  .catch((err) => console.log(err));
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(uri);
+    console.log(`MongoDB Connected: Personal DB ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+}
 
+const rendom = Math.floor(Math.random() * 500)
 
+console.log(rendom)
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "temp");
+    cb(null, "Images");
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    cb(null, rendom + file.originalname);
   },
 });
-const storage2 = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "images");
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
-  },
-});
+
 const upload = multer({
   storage: storage,
 });
 
-const upload2 = multer({
-  storage: storage2,
-});
 
-app.use("/images/temp", express.static("temp"));
-app.use("/images", express.static("images"));
+
+app.use("/images", express.static("Images"));
 
 
 app.use("/api/message", require("./Router/messageRouter"));
 app.use("/api/users", require("./Router/userRouter"));
+app.use("/api/posts", require("./Router/postsRouter"));
 
 app.use("/api/portfolio", require("./Router/portfolioRouter"));
 app.use("/api/components", require("./Router/componentRouter"));
@@ -95,17 +91,14 @@ app.use("/api/development", require("./Router/development"));
 app.use("/api/members", require("./Router/member"));
 app.use("/api/bhab", require("./Router/bhabSRoute"));
 
-app.post("/upload-temp", upload.single("image"), (req, res) => {
-  res.send({ url: `http://localhost:5000/images/temp/${req.file.filename}` });
+app.post("/upload-one", upload.single("image"), (req, res) => {
+  res.send({ url: `https://mdtamiz.xyz/images/${req.file.filename}` });
 
 });
 
-app.post("/upload", upload2.single("image"), (req, res) => {
-  res.send({ url: `http://localhost:5000/images/${req.file.filename}` });
-});
-
-
-app.use(express.static("public"));
+app.get("*", (req, res) => {
+  res.send({ status: "Running server" })
+})
 
 app.post("/api/send", (req, res) => {
   const body = req.body;
@@ -152,15 +145,23 @@ app.use('/linear/genarel-bd', require('./Router/LinearGraphicBd/genarelpricing')
 app.use('/flashfile/users', require('./Router/FlashFile/userRouter'))
 app.use('/flashfile/files', require('./Router/FlashFile/flashfilesRouter'))
 async function run() {
+  const { flash } = flashfile()
+
   await client.connect()
   console.log('Linear Graphic Database Connected')
+
+  await flash.connect()
+  console.log('Flash File Connect')
 
 }
 run().catch(console.dir())
 
 
-flashfile()
 
-server.listen(PORT, () => {
-  console.log("Example app listening");
-});
+
+connectDB().then(() => {
+
+  app.listen(PORT, () => {
+    console.log("listening for requests");
+  })
+})

@@ -10,7 +10,7 @@ const Cryptr = require('cryptr');
 router.get('/', (req, res) => {
     Message.find({}, (err, data) => {
         if (data) {
-            res.send(data)
+            res.send({ counter: data.length, data })
         }
         else {
             res.send(err)
