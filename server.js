@@ -11,7 +11,7 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const transporter = require("./Model/transporter");
 const http = require("http");
-mongoose.set('strictQuery', false)
+mongoose.set('strictQuery', true)
 const server = http.createServer(app);
 const { Server } = require('socket.io');
 const { activeUser, diactiveUser } = require("./Router/messageEditor");
@@ -137,8 +137,9 @@ app.post("/api/send", (req, res) => {
 
 
 
-connectDB()
+connectDB().then(() => {
 
-app.listen(PORT, () => {
-  console.log("listening for requests");
+  server.listen(PORT, () => {
+    console.log("listening for requests");
+  })
 })
