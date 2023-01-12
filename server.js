@@ -11,7 +11,6 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const transporter = require("./Model/transporter");
 const http = require("http");
-const linearServer = require("./server2");
 const flashfile = require("./Router/FlashFile/main");
 const server = http.createServer(app);
 const { Server } = require('socket.io');
@@ -96,7 +95,7 @@ app.post("/upload-one", upload.single("image"), (req, res) => {
 
 });
 
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
   res.send({ status: "Running server" })
 })
 
@@ -120,41 +119,21 @@ app.post("/api/send", (req, res) => {
   res.status(200).send({ message: "Message Sent" });
 });
 
-const { client } = linearServer()
-
-// Routes For Lineargraphic.com 
-// Routes For Lineargraphic.com 
-// Routes For Lineargraphic.com 
-
-app.use('/linear/portfolio', require('./Router/LinearGraphic/Portfolio'))
-app.use('/linear/pricing', require('./Router/LinearGraphic/pricing'))
-app.use('/linear/pricing2', require('./Router/LinearGraphic/pricing2'))
-app.use('/linear/titles', require('./Router/LinearGraphic/title'))
-app.use('/linear/bangla-titles', require('./Router/LinearGraphic/titleBangla'))
-app.use('/linear/users', require('./Router/LinearGraphic/users'))
-app.use('/linear/email', require('./Router/LinearGraphic/email'))
-app.use('/linear/genarel', require('./Router/LinearGraphic/genarelpricing'))
-app.use('/linear/genarel-bd', require('./Router/LinearGraphicBd/genarelpricing'))
-
-
 
 // Routes For Falshfiles 
 // Routes For Falshfiles  
 // Routes For Falshfiles 
 // flashfile 
-app.use('/flashfile/users', require('./Router/FlashFile/userRouter'))
-app.use('/flashfile/files', require('./Router/FlashFile/flashfilesRouter'))
-async function run() {
-  const { flash } = flashfile()
+// app.use('/flashfile/users', require('./Router/FlashFile/userRouter'))
+// app.use('/flashfile/files', require('./Router/FlashFile/flashfilesRouter'))
+// async function run() {
+//   const { flash } = flashfile()
 
-  await client.connect()
-  console.log('Linear Graphic Database Connected')
+//   await flash.connect()
+//   console.log('Flash File Connect')
 
-  await flash.connect()
-  console.log('Flash File Connect')
-
-}
-run().catch(console.dir())
+// }
+// run().catch(console.dir())
 
 
 
