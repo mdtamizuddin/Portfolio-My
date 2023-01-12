@@ -11,7 +11,7 @@ const mongoose = require("mongoose");
 const multer = require("multer");
 const transporter = require("./Model/transporter");
 const http = require("http");
-const flashfile = require("./Router/FlashFile/main");
+mongoose.set('strictQuery', false)
 const server = http.createServer(app);
 const { Server } = require('socket.io');
 const { activeUser, diactiveUser } = require("./Router/messageEditor");
@@ -27,7 +27,7 @@ const io = new Server(server, {
 
 const users = {}
 
-console.log(users)
+
 
 io.on("connection", (socket) => {
   socket.on("new-user-connect", (data) => {
@@ -60,7 +60,6 @@ const connectDB = async () => {
 
 const rendom = Math.floor(Math.random() * 500)
 
-console.log(rendom)
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -138,9 +137,8 @@ app.post("/api/send", (req, res) => {
 
 
 
-connectDB().then(() => {
+connectDB()
 
-  app.listen(PORT, () => {
-    console.log("listening for requests");
-  })
+app.listen(PORT, () => {
+  console.log("listening for requests");
 })
