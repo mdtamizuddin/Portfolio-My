@@ -9,7 +9,6 @@ require("dotenv").config();
 const uri = process.env.DB_URI;
 const mongoose = require("mongoose");
 const multer = require("multer");
-const transporter = require("./Model/transporter");
 const http = require("http");
 mongoose.set('strictQuery', true)
 const server = http.createServer(app);
@@ -47,6 +46,14 @@ io.on("connection", (socket) => {
   })
 })
 
+
+// main().catch(err => console.log(err));
+
+// async function main() {
+//   await mongoose.connect(uri);
+//   console.log("Db Connected")
+//   // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
+// }
 
 const connectDB = async () => {
   try {
@@ -88,6 +95,7 @@ app.use("/api/components", require("./Router/componentRouter"));
 app.use("/api/development", require("./Router/development"));
 app.use("/api/members", require("./Router/member"));
 app.use("/api/bhab", require("./Router/bhabSRoute"));
+app.use("/api/subject", require("./Router/subjectList"));
 
 app.post("/upload-one", upload.single("image"), (req, res) => {
   res.send({ url: `https://mdtamiz.xyz/images/${req.file.filename}` });
@@ -98,25 +106,7 @@ app.get("/", (req, res) => {
   res.send({ status: "Running server" })
 })
 
-app.post("/api/send", (req, res) => {
-  const body = req.body;
-  async function main() {
-    let info = await transporter.sendMail({
-      from: '"Website Mail " <web@mdtamiz.xyz>', // sender address
-      to: "mdtomiz.official@gmail.com", // list of receivers
-      subject: req.body.subject, // Subject line
-      text: req.body.message, // plain text body
-      html: `<p>${req.body.message}</p>`, // html body
-    });
 
-    console.log("Message sent: %s", info.messageId);
-
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-  }
-
-  main().catch(console.error);
-  res.status(200).send({ message: "Message Sent" });
-});
 
 
 // Routes For Falshfiles 
@@ -143,3 +133,8 @@ connectDB().then(() => {
     console.log("listening for requests");
   })
 })
+
+
+// server.listen(PORT, () => {
+//   console.log("listening for requests");
+// })
